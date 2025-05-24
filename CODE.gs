@@ -12,6 +12,13 @@ function getCurrentUserEmail() {
 }
 
 /**
+ * Returns the user's remaining daily Gmail sending quota.
+ */
+function getEmailQuota() {
+  return MailApp.getRemainingDailyQuota();
+}
+
+/**
  * Given a Google Sheet ID or URL, return its sheets and headers.
  */
 function getSheetsAndHeaders(sheetIdOrUrl) {
@@ -36,6 +43,7 @@ function getSheetsAndHeaders(sheetIdOrUrl) {
 /**
  * Send emails based on config, using the Sheet ID or URL provided.
  * Supports masking the sender with a display name if provided.
+ * Set config.test=true to send a test mail to user using testValue for each mapping.
  * @param {Object} config
  * {
  *   sheetIdOrUrl: string,
@@ -44,12 +52,40 @@ function getSheetsAndHeaders(sheetIdOrUrl) {
  *   emailCol: string,
  *   subject: string,
  *   body: string,
- *   mappings: [{placeholder: string, column: string}],
+ *   mappings: [{placeholder: string, column: string, testValue: string}],
  *   fromName: string,
- *   fromEmail: string
+ *   fromEmail: string,
+ *   test: boolean
  * }
  */
 function sendMailMerge(config) {
+  if (config.test) {
+    // Send test email using test values
+    var subject = config.subject;
+    var body = config.body;
+    var map = {};
+    (config.mappings || []).forEach(function(m) {
+      if (m.placeholder) {
+        map[m.placeholder] = m.testValue || '';
+      }
+    });
+    for (var p in map) {
+      subject = subject.replace(new RegExp('{{' + p + '}}', 'g'), map[p]);
+      body = body.replace(new RegExp('{{' + p + '}}', 'g'), map[p]);
+    }
+    var mailOptions = {
+      to: config.fromEmail || Session.getActiveUser().getEmail(),
+      subject: subject,
+      htmlBody: body
+    };
+    if (config.fromName) {
+      mailOptions.name = config.fromName;
+    }
+    MailApp.sendEmail(mailOptions);
+    return 'Test email sent to ' + mailOptions.to + '!';
+  }
+
+  // ...existing mail merge logic...
   var ss;
   if (config.sheetIdOrUrl.startsWith('http')) {
     ss = SpreadsheetApp.openByUrl(config.sheetIdOrUrl);
@@ -100,7 +136,6 @@ function sendMailMerge(config) {
       subject: subject,
       htmlBody: body
     };
-    // Set sender mask if name provided
     if (config.fromName) {
       mailOptions.name = config.fromName;
     }
