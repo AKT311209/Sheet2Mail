@@ -55,11 +55,6 @@ A modern, user-friendly mail merge web app for Google Sheets and Gmail, featurin
 ## Notes on Sender Masking ("From" Name)
 
 - You can set a sender name (`From: Name <email@example.com>`) in the UI.
-- **Limitation:** Due to Google/Gmail policies, the email will always be sent from your account's email, and the display name can only be changed if:
-  - You're sending from an alias address set up in your Gmail account, _and_
-  - You use `GmailApp.sendEmail` (not `MailApp`), and _and_
-  - The alias is verified.
-- For most Gmail/Workspace users, the name may be overridden by your Google account name.
 
 ---
 
