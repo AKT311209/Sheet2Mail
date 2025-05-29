@@ -79,4 +79,4 @@ Yes, but respect Gmail's daily sending limits and anti-spam policies.
 
 ## License
 
-MIT License (see [LICENSE](LICENSE)
+MIT License (see [LICENSE](LICENSE))
