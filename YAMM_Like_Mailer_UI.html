@@ -229,6 +229,50 @@
       margin-right: 10px;
     }
 
+    /* --- SCHEDULE SEND DIALOG --- */
+    .gmail-dialog-schedule {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 18px #3333;
+      padding: 24px 20px 20px 20px;
+      z-index: 1002;
+      min-width: 320px;
+      min-height: 100px;
+    }
+
+    .gmail-dialog-schedule input[type="datetime-local"] {
+      width: 100%;
+      font-size: 15px;
+      margin-bottom: 12px;
+      margin-top: 8px;
+    }
+
+    .gmail-dialog-schedule label {
+      font-size: 13px;
+      color: #444;
+      font-weight: 400;
+    }
+
+    .gmail-dialog-schedule button {
+      font-size: 13px;
+      margin-right: 10px;
+    }
+
+    .gmail-dialog-bg-schedule {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.3);
+      z-index: 1001;
+    }
+
     .footer-dev {
       text-align: center;
       font-size: 13px;
@@ -426,6 +470,25 @@
         <div id="linkDialogError" style="color:#e53935;font-size:13px;margin-top:6px;"></div>
       </div>
     </div>
+    <!-- Schedule Send Dialog -->
+    <div class="gmail-dialog-bg-schedule" id="scheduleDialogBg">
+      <div class="gmail-dialog-schedule">
+        <div style="font-weight:500;font-size:16px;margin-bottom:6px;">Send Options</div>
+        <div id="scheduleStep1">
+          <button type="button" id="sendNowBtn" style="margin-bottom:10px;width:100%;background:#1a73e8;color:#fff;border:none;border-radius:4px;padding:8px 0;font-size:15px;">Send Immediately</button>
+          <button type="button" id="scheduleBtn" style="width:100%;background:#ffa726;color:#fff;border:none;border-radius:4px;padding:8px 0;font-size:15px;">Schedule Send</button>
+        </div>
+        <div id="scheduleStep2" style="display:none;">
+          <label for="scheduleDateTime">Select date and time to send:</label>
+          <input type="datetime-local" id="scheduleDateTime" step="1" />
+          <div style="margin-top:10px;">
+            <button type="button" id="confirmScheduleBtn" style="background:#1a73e8;color:#fff;border:none;border-radius:4px;padding:6px 18px;">Confirm</button>
+            <button type="button" id="cancelScheduleBtn">Cancel</button>
+          </div>
+          <div id="scheduleDialogError" style="color:#e53935;font-size:13px;margin-top:6px;"></div>
+        </div>
+      </div>
+    </div>
     <div class="footer-dev">
       Developed by Khoi Tran (<a href="https://about.khoi.io.vn" target="_blank">AKT311209</a>)<br>
         Source on <a href="https://github.com/AKT311209/Sheet2Mail/" target="_blank">GitHub</a>
@@ -619,6 +682,99 @@
       }
     });
 
+    // --- SCHEDULE SEND LOGIC ---
+    let scheduleSendCallback = null;
+    function openScheduleDialog(callback) {
+      scheduleSendCallback = callback;
+      document.getElementById('scheduleDialogBg').style.display = 'block';
+      document.getElementById('scheduleStep1').style.display = '';
+      document.getElementById('scheduleStep2').style.display = 'none';
+      document.getElementById('scheduleDialogError').textContent = '';
+    }
+    function closeScheduleDialog() {
+      document.getElementById('scheduleDialogBg').style.display = 'none';
+      document.getElementById('scheduleDialogError').textContent = '';
+    }
+    document.getElementById('sendNowBtn').onclick = function() {
+      closeScheduleDialog();
+      if (scheduleSendCallback) scheduleSendCallback({ mode: 'now' });
+    };
+    document.getElementById('scheduleBtn').onclick = function() {
+      document.getElementById('scheduleStep1').style.display = 'none';
+      document.getElementById('scheduleStep2').style.display = '';
+      // Set min date/time to now, and format input as dd/mm/yyyy
+      const dtInput = document.getElementById('scheduleDateTime');
+      const now = new Date();
+      // Format as yyyy-MM-ddTHH:mm:ss for input value
+      const pad = n => n.toString().padStart(2, '0');
+      const yyyy = now.getFullYear();
+      const mm = pad(now.getMonth() + 1);
+      const dd = pad(now.getDate());
+      const hh = pad(now.getHours());
+      const min = pad(now.getMinutes());
+      const ss = pad(now.getSeconds());
+      dtInput.value = `${yyyy}-${mm}-${dd}T${hh}:${min}:${ss}`;
+      dtInput.min = dtInput.value;
+      document.getElementById('scheduleDialogError').textContent = '';
+      // Add dd/mm/yyyy placeholder and date mask
+      dtInput.placeholder = 'dd/mm/yyyy hh:mm:ss';
+      dtInput.oninput = function() {
+        // No-op, browser handles format
+      };
+    };
+    document.getElementById('confirmScheduleBtn').onclick = function() {
+      const dt = document.getElementById('scheduleDateTime').value;
+      if (!dt) {
+        document.getElementById('scheduleDialogError').textContent = 'Please select a date and time.';
+        return;
+      }
+      // Show confirmation in dd/mm/yyyy hh:mm:ss
+      const d = new Date(dt);
+      const pad = n => n.toString().padStart(2, '0');
+      const formatted = `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+      document.getElementById('result').textContent = 'Scheduled email send for ' + formatted + '.';
+      closeScheduleDialog();
+      if (scheduleSendCallback) scheduleSendCallback({ mode: 'schedule', datetime: dt });
+    };
+    // ESC key closes schedule dialog too
+    document.addEventListener('keydown', function(e) {
+      if (e.key === "Escape") {
+        closeScheduleDialog();
+      }
+    });
+
+    // --- OVERRIDE SEND BUTTON LOGIC ---
+    document.getElementById('mailmerge-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      openScheduleDialog(function(option) {
+        const mappings = getMappings();
+        const form = document.getElementById('mailmerge-form');
+        const sheetSel = document.getElementById('sheetSelect');
+        const config = {
+          sheetIdOrUrl: form.sheetId.value,
+          sheetName: decodeURIComponent(sheetSel.value),
+          rangeA1: form.rangeA1.value,
+          emailCol: form.emailCol.value,
+          subject: form.subject.value,
+          body: quill.root.innerHTML,
+          mappings: mappings,
+          fromName: document.getElementById('fromName').value,
+          fromEmail: document.getElementById('fromEmail').value
+        };
+        if (option.mode === 'schedule') {
+          config.scheduleDateTime = option.datetime;
+        }
+        document.getElementById('result').textContent = option.mode === 'schedule' ? 'Scheduling email...' : 'Sending emails...';
+        google.script.run.withSuccessHandler(function(msg) {
+          document.getElementById('result').textContent = msg;
+          updateQuotaDisplay();
+        }).withFailureHandler(function(err) {
+          document.getElementById('result').textContent = 'Error: ' + err.message;
+          updateQuotaDisplay();
+        }).sendMailMerge(config);
+      });
+    }, true); // useCapture true to override previous
+
     // --- SUBMIT LOGIC ---
 
     // Utility to get mapping config, with an option to grab test values
@@ -632,32 +788,6 @@
       });
       return mappings;
     }
-
-    document.getElementById('mailmerge-form').addEventListener('submit', function(e) {
-      e.preventDefault();
-      const mappings = getMappings();
-      const form = e.target;
-      const sheetSel = document.getElementById('sheetSelect');
-      const config = {
-        sheetIdOrUrl: form.sheetId.value,
-        sheetName: decodeURIComponent(sheetSel.value),
-        rangeA1: form.rangeA1.value,
-        emailCol: form.emailCol.value,
-        subject: form.subject.value,
-        body: quill.root.innerHTML,
-        mappings: mappings,
-        fromName: document.getElementById('fromName').value,
-        fromEmail: document.getElementById('fromEmail').value
-      };
-      document.getElementById('result').textContent = 'Sending emails...';
-      google.script.run.withSuccessHandler(function(msg) {
-        document.getElementById('result').textContent = msg;
-        updateQuotaDisplay();
-      }).withFailureHandler(function(err) {
-        document.getElementById('result').textContent = 'Error: ' + err.message;
-        updateQuotaDisplay();
-      }).sendMailMerge(config);
-    });
 
     // TEST BUTTON LOGIC
     document.getElementById('testBtn').addEventListener('click', function() {

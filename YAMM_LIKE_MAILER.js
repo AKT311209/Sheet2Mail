@@ -44,6 +44,7 @@ function getSheetsAndHeaders(sheetIdOrUrl) {
  * Send emails based on config, using the Sheet ID or URL provided.
  * Supports masking the sender with a display name if provided.
  * Set config.test=true to send a test mail to user using testValue for each mapping.
+ * If config.scheduleDateTime is set (ISO string), schedule the send using Apps Script triggers.
  * @param {Object} config
  * {
  *   sheetIdOrUrl: string,
@@ -55,10 +56,34 @@ function getSheetsAndHeaders(sheetIdOrUrl) {
  *   mappings: [{placeholder: string, column: string, testValue: string}],
  *   fromName: string,
  *   fromEmail: string,
- *   test: boolean
+ *   test: boolean,
+ *   scheduleDateTime: string (optional, ISO 8601)
  * }
  */
 function sendMailMerge(config) {
+  if (config.scheduleDateTime && !config.test) {
+    // Schedule the sendMailMerge to run at the specified time
+    var dt = new Date(config.scheduleDateTime);
+    if (isNaN(dt.getTime())) throw new Error('Invalid schedule date/time.');
+    // Remove scheduleDateTime to avoid recursion
+    var configCopy = JSON.parse(JSON.stringify(config));
+    delete configCopy.scheduleDateTime;
+    ScriptApp.newTrigger('sendMailMergeScheduled')
+      .timeBased()
+      .at(dt)
+      .create();
+    // Store config in PropertiesService for the scheduled trigger
+    var key = 'SCHEDULED_MAILMERGE_' + dt.getTime();
+    PropertiesService.getScriptProperties().setProperty(key, JSON.stringify(configCopy));
+    // Format date as dd/mm/yy
+    var day = dt.getDate().toString().padStart(2, '0');
+    var month = (dt.getMonth() + 1).toString().padStart(2, '0');
+    var year = dt.getFullYear().toString().slice(-2);
+    var formatted = day + '/' + month + '/' + year;
+    var time = dt.toTimeString().slice(0,8); // HH:MM:SS
+    return 'Scheduled email send for ' + formatted + ' ' + time + '.';
+  }
+
   if (config.test) {
     // Send test email using test values
     var subject = config.subject;
@@ -119,11 +144,14 @@ function sendMailMerge(config) {
   });
 
   var sentCount = 0;
+  var firstRow = null;
+  var lastRow = null;
   for (var i = 1; i < data.length; i++) {
     var row = data[i];
     var email = row[colMap[config.emailCol]];
     if (!email) continue;
-
+    if (firstRow === null) firstRow = i + 1; // +1 for 1-based row number
+    lastRow = i + 1;
     var subject = config.subject;
     var body = config.body;
     for (var p in map) {
@@ -142,5 +170,44 @@ function sendMailMerge(config) {
     MailApp.sendEmail(mailOptions);
     sentCount++;
   }
-  return 'Sent ' + sentCount + ' emails!';
+  if (sentCount === 0) {
+    return 'No emails sent (no valid recipients in the selected range).';
+  }
+  return 'Sending ' + sentCount + ' emails, from row ' + firstRow + ' to row ' + lastRow + '.';
+}
+
+/**
+ * Trigger handler for scheduled mail merge.
+ * Looks up config in PropertiesService and calls sendMailMerge.
+ */
+function sendMailMergeScheduled(e) {
+  // Remove the trigger that called this function (cleanup)
+  if (e && e.triggerUid) {
+    var allTriggers = ScriptApp.getProjectTriggers();
+    for (var i = 0; i < allTriggers.length; i++) {
+      if (allTriggers[i].getUniqueId && allTriggers[i].getUniqueId() === e.triggerUid) {
+        ScriptApp.deleteTrigger(allTriggers[i]);
+        break;
+      }
+    }
+  }
+  // Find the config for the closest scheduled time (within 2 minutes)
+  var now = Date.now();
+  var props = PropertiesService.getScriptProperties().getProperties();
+  var foundKey = null;
+  var foundConfig = null;
+  for (var key in props) {
+    if (key.startsWith('SCHEDULED_MAILMERGE_')) {
+      var t = parseInt(key.replace('SCHEDULED_MAILMERGE_', ''));
+      if (Math.abs(now - t) < 2 * 60 * 1000) { // within 2 minutes
+        foundKey = key;
+        foundConfig = JSON.parse(props[key]);
+        break;
+      }
+    }
+  }
+  if (foundConfig) {
+    sendMailMerge(foundConfig);
+    PropertiesService.getScriptProperties().deleteProperty(foundKey);
+  }
 }
