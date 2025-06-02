@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <base target="_top">
+  <link href="https://fonts.googleapis.com/css?family=Roboto:400,500&display=swap" rel="stylesheet">
+  <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Roboto', Arial, sans-serif;
+      background: #f5f5f5;
+      margin: 0;
+      padding: 0;
+    }
+
+    .gmail-container {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(60, 64, 67, 0.08), 0 1.5px 8px rgba(60, 64, 67, 0.08);
+      width: 650px;
+      margin: 24px auto;
+      padding: 0;
+    }
+
+    .gmail-header {
+      background: #f2f2f2;
+      border-bottom: 1px solid #e0e0e0;
+      border-radius: 8px 8px 0 0;
+      padding: 16px 24px;
+      font-size: 18px;
+      font-weight: 500;
+      color: #222;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .gmail-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #e0e0e0;
+      display: inline-block;
+      vertical-align: middle;
+      background-image: url('https://ssl.gstatic.com/ui/v1/icons/mail/gm3/1x/avatar_2x.png');
+      background-size: cover;
+    }
+
+    .gmail-form {
+      padding: 0 24px 24px 24px;
+    }
+
+    .gmail-field {
+      display: flex;
+      align-items: center;
+      margin-top: 16px;
+    }
+
+    .gmail-label {
+      width: 60px;
+      color: #666;
+      font-weight: 400;
+      font-size: 14px;
+      margin-right: 8px;
+    }
+
+    .gmail-input,
+    .gmail-select {
+      flex: 1;
+      border: none;
+      background: transparent;
+      border-bottom: 1px solid #ccc;
+      font-size: 15px;
+      outline: none;
+      padding: 6px 0;
+      max-width: 100%;
+      box-sizing: border-box;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
+      display: block;
+    }
+
+    .gmail-select option,
+    .gmail-trimmed-option {
+      max-width: 300px;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
+      display: block;
+    }
+
+    .gmail-divider {
+      height: 1px;
+      background: #e0e0e0;
+      margin: 10px 0;
+    }
+
+    #quill-container {
+      min-height: 130px;
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      margin-top: 8px;
+    }
+
+    .gmail-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 0 0 0;
+    }
+
+    .gmail-send-btn {
+      background: #1a73e8;
+      color: #fff;
+      border: none;
+      border-radius: 24px;
+      padding: 10px 32px;
+      font-size: 15px;
+      font-weight: 500;
+      margin-left: 10px;
+      cursor: pointer;
+      box-shadow: 0 1px 3px rgba(26, 115, 232, 0.1);
+      transition: background 0.2s;
+    }
+
+    .gmail-send-btn:hover {
+      background: #1765cc;
+    }
+
+    .gmail-meta-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .gmail-meta-col {
+      flex: 1;
+    }
+
+    .gmail-mappings-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 6px;
+    }
+
+    .gmail-mappings-table th,
+    .gmail-mappings-table td {
+      padding: 4px 6px;
+      font-size: 13px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .gmail-mappings-table th {
+      background: #f7f7f7;
+      color: #555;
+      font-weight: 400;
+    }
+
+    .gmail-meta-col label {
+      font-size: 13px;
+      color: #888;
+      font-weight: 400;
+    }
+
+    .gmail-add-mapping-btn {
+      background: #f2f2f2;
+      color: #222;
+      border: 1px dashed #ccc;
+      border-radius: 4px;
+      padding: 4px 14px;
+      font-size: 13px;
+      cursor: pointer;
+      margin-top: 6px;
+      transition: background 0.15s;
+    }
+
+    .gmail-add-mapping-btn:hover {
+      background: #e0e0e0;
+    }
+
+    #result {
+      padding: 10px 0 0 0;
+      color: #388e3c;
+      font-size: 14px;
+      min-height: 18px;
+    }
+
+    .gmail-dialog-bg {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.3);
+      z-index: 1000;
+    }
+
+    .gmail-dialog {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 18px #3333;
+      padding: 24px 20px 20px 20px;
+      z-index: 1001;
+      min-width: 300px;
+      min-height: 100px;
+    }
+
+    .gmail-dialog input {
+      width: 100%;
+      font-size: 15px;
+      margin-bottom: 12px;
+    }
+
+    .gmail-dialog label {
+      font-size: 13px;
+      color: #444;
+      font-weight: 400;
+    }
+
+    .gmail-dialog button {
+      font-size: 13px;
+      margin-right: 10px;
+    }
+
+    .footer-dev {
+      text-align: center;
+      font-size: 13px;
+      color: #888;
+      padding-bottom: 12px;
+    }
+
+    .footer-dev a {
+      color: #1a73e8;
+      text-decoration: none;
+    }
+
+    .footer-dev a:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 700px) {
+      .gmail-container {
+        width: 99%;
+      }
+
+      .gmail-header {
+        padding: 10px 6px;
+        font-size: 16px;
+      }
+
+      .gmail-form {
+        padding: 0 6px 12px 6px;
+      }
+    }
+  </style>
+  <script src="https://cdn.quilljs.com/1.3.7/quill.js"></script>
+  <script>
+    // Register Quill font and size whitelists
+    var Font = Quill.import('formats/font');
+    Font.whitelist = ['sans-serif', 'serif', 'monospace', 'roboto', 'arial', 'times-new-roman', 'courier-new'];
+    Quill.register(Font, true);
+
+    var Size = Quill.import('attributors/style/size');
+    Size.whitelist = ['small', 'normal', 'large', 'huge', '10px', '12px', '14px', '16px', '18px', '24px', '32px'];
+    Quill.register(Size, true);
+  </script>
+</head>
+
+<body>
+  <div class="gmail-container">
+    <div class="gmail-header">
+      <span class="gmail-avatar"></span>
+      New Email
+    </div>
+    <div id="quota-section" style="text-align:right; color:#666; font-size:13px; padding: 6px 24px 0 0;">
+      Sending quota left: <span id="quota-value">--</span> emails today
+    </div>
+    <form id="mailmerge-form" class="gmail-form" autocomplete="off">
+      <div class="gmail-field">
+        <span class="gmail-label">Sheet</span>
+        <input type="text" id="sheetId" name="sheetId" class="gmail-input" placeholder="Google Sheet URL or ID" />
+        <button type="button" onclick="loadSheetData()" style="margin-left:10px;padding:5px 10px;border-radius:4px;border:1px solid #1a73e8;background:#f2f8fd;color:#1a73e8;font-size:13px;">Load</button>
+      </div>
+      <div id="sheet-config" style="display:none;">
+        <div class="gmail-field" style="margin-top:6px;">
+          <span class="gmail-label">From</span>
+          <input type="text" id="fromName" name="fromName" class="gmail-input" style="width:38%;" placeholder="Sender Name (optional)" />
+          <span style="margin: 0 8px;">&lt;</span>
+          <input type="text" id="fromEmail" name="fromEmail" class="gmail-input" style="width:52%;" placeholder="your@email.com" disabled />
+          <span>&gt;</span>
+        </div>
+        <div class="gmail-field">
+          <span class="gmail-label">Sheet</span>
+          <select id="sheetSelect" name="sheet" class="gmail-select"></select>
+        </div>
+        <div class="gmail-field">
+          <span class="gmail-label">To</span>
+          <select id="emailCol" name="emailCol" class="gmail-select"></select>
+        </div>
+        <div class="gmail-field">
+          <span class="gmail-label">Range</span>
+          <input type="text" id="rangeA1" name="rangeA1" class="gmail-input" value="A1:E10" />
+        </div>
+        <div class="gmail-divider"></div>
+        <div class="gmail-field">
+          <span class="gmail-label">Subject</span>
+          <input type="text" id="subject" name="subject" class="gmail-input" placeholder="Subject with {{placeholders}}" />
+        </div>
+        <div class="gmail-field" style="align-items: flex-start;">
+          <span class="gmail-label" style="margin-top:8px;">Body</span>
+          <div style="flex: 1;">
+            <div id="toolbar">
+              <span class="ql-formats">
+    <select class="ql-font">
+      <option selected value="sans-serif">Sans Serif</option>
+      <option value="serif">Serif</option>
+      <option value="monospace">Monospace</option>
+      <option value="roboto">Roboto</option>
+      <option value="arial">Arial</option>
+      <option value="times-new-roman">Times New Roman</option>
+      <option value="courier-new">Courier New</option>
+    </select>
+    <select class="ql-size">
+      <option value="small">Small</option>
+      <option selected value="normal">Normal</option>
+      <option value="large">Large</option>
+      <option value="huge">Huge</option>
+      <option value="10px">10px</option>
+      <option value="12px">12px</option>
+      <option value="14px">14px</option>
+      <option value="16px">16px</option>
+      <option value="18px">18px</option>
+      <option value="24px">24px</option>
+      <option value="32px">32px</option>
+    </select>
+  </span>
+              <span class="ql-formats">
+    <select class="ql-color"></select>
+  </span>
+              <span class="ql-formats">
+    <button class="ql-bold"></button>
+    <button class="ql-italic"></button>
+    <button class="ql-underline"></button>
+    <button class="ql-strike"></button>
+  </span>
+              <span class="ql-formats">
+    <button type="button" class="ql-link" id="customLinkBtn"></button>
+    <button class="ql-code-block"></button>
+    <button class="ql-blockquote"></button>
+  </span>
+              <span class="ql-formats">
+    <button class="ql-highlight" title="Highlight text"><span style="background:yellow;">H</span></button>
+              </span>
+              <span class="ql-formats">
+    <button class="ql-list" value="ordered"></button>
+    <button class="ql-list" value="bullet"></button>
+  </span>
+              <span class="ql-formats">
+    <button class="ql-clean"></button>
+  </span>
+              <span class="ql-formats">
+    <button type="button" id="insertImageBtn" title="Insert image from link">
+      <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#444" d="M19 19H5V5h7V3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zm-6-8l-2.03 2.71 2.56 3.42 3.44-4.59L21 17H7z"/><circle fill="#444" cx="14.5" cy="7.5" r="1.5"/></svg>
+    </button>
+  </span>
+            </div>
+            <div id="quill-container"></div>
+          </div>
+        </div>
+        <div class="gmail-divider"></div>
+        <div class="gmail-meta-row">
+          <div class="gmail-meta-col">
+            <label>Placeholder/Column Mapping</label>
+            <table class="gmail-mappings-table" id="mappingTable">
+              <thead>
+                <tr>
+                  <th>Placeholder (e.g. first_name)</th>
+                  <th>Sheet Column</th>
+                  <th>Test value</th>
+                </tr>
+              </thead>
+              <tbody id="mappingBody"></tbody>
+            </table>
+            <button type="button" class="gmail-add-mapping-btn" onclick="addMappingRow()">+ Add Placeholder</button>
+          </div>
+          <div class="gmail-meta-col">
+            <label style="margin-bottom:4px;display:block;"> </label>
+            <button type="submit" class="gmail-send-btn">Send</button>
+            <button type="button" class="gmail-send-btn" style="background:#ffa726;margin-left:8px;" id="testBtn">Test</button>
+          </div>
+        </div>
+        <div id="result"></div>
+      </div>
+    </form>
+    <!-- Image from link dialog -->
+    <div class="gmail-dialog-bg" id="imageDialogBg">
+      <div class="gmail-dialog">
+        <div style="font-weight:500;font-size:16px;margin-bottom:6px;">Insert image from link</div>
+        <input type="text" id="imageUrlInput" placeholder="https://example.com/image.png" />
+        <div>
+          <button type="button" onclick="insertImageFromDialog()">Insert</button>
+          <button type="button" onclick="closeImageDialog()">Cancel</button>
+        </div>
+        <div id="imageDialogError" style="color:#e53935;font-size:13px;margin-top:6px;"></div>
+      </div>
+    </div>
+    <!-- Link from dialog -->
+    <div class="gmail-dialog-bg" id="linkDialogBg">
+      <div class="gmail-dialog">
+        <div style="font-weight:500;font-size:16px;margin-bottom:6px;">Insert/Edit Link</div>
+        <label for="linkTextInput">Text to display (optional):</label>
+        <input type="text" id="linkTextInput" placeholder="Link text (optional)" />
+        <label for="linkUrlInput">URL:</label>
+        <input type="text" id="linkUrlInput" placeholder="https://example.com/" />
+        <div>
+          <button type="button" onclick="insertLinkFromDialog()">Insert</button>
+          <button type="button" onclick="closeLinkDialog()">Cancel</button>
+        </div>
+        <div id="linkDialogError" style="color:#e53935;font-size:13px;margin-top:6px;"></div>
+      </div>
+    </div>
+    <div class="footer-dev">
+      Developed by Khoi Tran (<a href="https://about.khoi.io.vn" target="_blank">AKT311209</a>)<br>
+        Source on <a href="https://github.com/AKT311209/Sheet2Mail/" target="_blank">GitHub</a>
+    </div>
+  </div>
+  <script>
+    // --- QUOTA LOGIC ---
+    function updateQuotaDisplay() {
+      google.script.run.withSuccessHandler(function(quota) {
+        document.getElementById('quota-value').textContent = quota;
+      }).getEmailQuota();
+    }
+
+    // Set user's email if possible and update quota on load
+    document.addEventListener('DOMContentLoaded', function() {
+      google.script.run.withSuccessHandler(function(email) {
+        document.getElementById('fromEmail').value = email;
+      }).getCurrentUserEmail && google.script.run.getCurrentUserEmail();
+      updateQuotaDisplay();
+    });
+
+    let sheetData = [];
+    function trimText(text, n) { return text.length > n ? text.slice(0, n - 3) + "..." : text; }
+    function loadSheetData() {
+      const sheetId = document.getElementById('sheetId').value.trim();
+      if (!sheetId) {
+        alert("Please enter a Spreadsheet ID or URL."); return;
+      }
+      google.script.run.withSuccessHandler(function(data) {
+        sheetData = data;
+        if (data.length === 0) {
+          alert("No sheets found or invalid Sheet ID/URL.");
+          document.getElementById('sheet-config').style.display = 'none'; return;
+        }
+        document.getElementById('sheet-config').style.display = 'block';
+        const sheetSel = document.getElementById('sheetSelect');
+        sheetSel.innerHTML = '';
+        data.forEach((s, idx) => {
+          sheetSel.innerHTML += `<option value="${encodeURIComponent(s.name)}" title="${s.name}">${trimText(s.name, 30)}</option>`;
+        });
+        sheetSel.selectedIndex = 0;
+        onSheetChange();
+      }).getSheetsAndHeaders(sheetId);
+    }
+    function onSheetChange() {
+      const sheetSel = document.getElementById('sheetSelect');
+      const sheetName = decodeURIComponent(sheetSel.value);
+      const headers = (sheetData.find(s => s.name === sheetName) || {headers:[]}).headers;
+      const emailColSel = document.getElementById('emailCol');
+      emailColSel.innerHTML = '';
+      headers.forEach(h => {
+        emailColSel.innerHTML += `<option value="${h}" class="gmail-trimmed-option" title="${h}">${trimText(h, 30)}</option>`;
+      });
+      updateMappingColumns(headers);
+    }
+    function updateMappingColumns(headers) {
+      let rows = document.querySelectorAll('#mappingBody tr');
+      rows.forEach(row => {
+        let select = row.querySelector('select'); let prev = select.value; select.innerHTML = '';
+        headers.forEach(h => {
+          select.innerHTML += `<option value="${h}" class="gmail-trimmed-option" title="${h}" ${h===prev ? 'selected' : ''}>${trimText(h, 30)}</option>`;
+        });
+      });
+    }
+    function addMappingRow() {
+      const sheetSel = document.getElementById('sheetSelect');
+      const sheetName = decodeURIComponent(sheetSel.value);
+      if (!sheetName) return;
+      const headers = (sheetData.find(s => s.name === sheetName) || {headers:[]}).headers;
+      let tr = document.createElement('tr');
+      tr.innerHTML = `<td><input type="text" placeholder="e.g., first_name" style="width:98%"></td>
+                      <td><select style="width:98%">${headers.map(h => `<option value="${h}" class="gmail-trimmed-option" title="${h}">${trimText(h, 30)}</option>`).join('')}</select></td>
+                      <td><input type="text" placeholder="Test value" style="width:98%"></td>`;
+      document.getElementById('mappingBody').appendChild(tr);
+    }
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('sheetSelect').addEventListener('change', onSheetChange);
+    });
+
+    // --- RICH TEXT EDITOR LOGIC ---
+    var Highlight = Quill.import('attributors/class/background');
+    Quill.register(Highlight, true);
+    var quill = new Quill('#quill-container', {
+      theme: 'snow',
+      placeholder: 'Compose email. Use {{placeholders}} for merge fields.',
+      modules: {
+        toolbar: {
+          container: "#toolbar",
+          handlers: {
+            highlight: function() {
+              let range = quill.getSelection();
+              if (range) {
+                quill.formatText(range.index, range.length, { background: 'yellow' });
+              }
+            }
+          }
+        }
+      }
+    });
+    document.querySelector('.ql-highlight').onclick = function () {
+      let range = quill.getSelection();
+      if (range && range.length) {
+        quill.format('background', 'yellow');
+      }
+    };
+
+    // --- Image from link logic ---
+    function openImageDialog() {
+      document.getElementById('imageUrlInput').value = '';
+      document.getElementById('imageDialogError').textContent = '';
+      document.getElementById('imageDialogBg').style.display = 'block';
+      setTimeout(() => { document.getElementById('imageUrlInput').focus(); }, 100);
+    }
+    function closeImageDialog() {
+      document.getElementById('imageDialogBg').style.display = 'none';
+      document.getElementById('imageDialogError').textContent = '';
+    }
+    function insertImageFromDialog() {
+      const url = document.getElementById('imageUrlInput').value.trim();
+      const errorBox = document.getElementById('imageDialogError');
+      if (!url) {
+        errorBox.textContent = "Please enter an image URL.";
+        return;
+      }
+      if (!/^https?:\/\/.+\.(jpg|jpeg|png|gif|bmp|webp|svg)(\?.*)?$/i.test(url)) {
+        errorBox.textContent = "Not a valid image URL.";
+        return;
+      }
+      quill.insertEmbed(quill.getSelection(true).index || 0, 'image', url, "user");
+      closeImageDialog();
+    }
+    document.getElementById('insertImageBtn').onclick = openImageDialog;
+
+    // --- Link from dialog logic with text mask ---
+    function openLinkDialog() {
+      const range = quill.getSelection();
+      document.getElementById('linkUrlInput').value = '';
+      document.getElementById('linkTextInput').value = '';
+      document.getElementById('linkDialogError').textContent = '';
+
+      // Pre-fill with selected text if available
+      if (range && range.length > 0) {
+        const selectedText = quill.getText(range.index, range.length);
+        document.getElementById('linkTextInput').value = selectedText;
+      }
+      document.getElementById('linkDialogBg').style.display = 'block';
+      setTimeout(() => { document.getElementById('linkUrlInput').focus(); }, 100);
+    }
+    function closeLinkDialog() {
+      document.getElementById('linkDialogBg').style.display = 'none';
+      document.getElementById('linkDialogError').textContent = '';
+    }
+    function insertLinkFromDialog() {
+      const url = document.getElementById('linkUrlInput').value.trim();
+      const text = document.getElementById('linkTextInput').value;
+      const errorBox = document.getElementById('linkDialogError');
+      if (!url) {
+        errorBox.textContent = "Please enter a URL.";
+        return;
+      }
+      if (!/^https?:\/\//i.test(url)) {
+        errorBox.textContent = "Not a valid URL (must start with http:// or https://).";
+        return;
+      }
+      const range = quill.getSelection(true);
+      if (range && range.length > 0) {
+        // If text selected, replace text if mask is different, then format as link
+        if (text && quill.getText(range.index, range.length) !== text) {
+          quill.deleteText(range.index, range.length);
+          quill.insertText(range.index, text, { link: url });
+        } else {
+          quill.format('link', url);
+        }
+      } else if (text) {
+        // If no text selected but mask provided, insert as link
+        quill.insertText(range.index, text, { link: url });
+      } else {
+        // Insert the URL itself as link
+        quill.insertText(range.index, url, { link: url });
+      }
+      closeLinkDialog();
+    }
+    // Override default link button to show custom dialog
+    document.getElementById('customLinkBtn').onclick = openLinkDialog;
+
+    // ESC key closes dialogs
+    document.addEventListener('keydown', function(e) {
+      if (e.key === "Escape") {
+        closeImageDialog();
+        closeLinkDialog();
+      }
+    });
+
+    // --- SUBMIT LOGIC ---
+
+    // Utility to get mapping config, with an option to grab test values
+    function getMappings() {
+      let mappings = [];
+      document.querySelectorAll('#mappingBody tr').forEach(row => {
+        let ph = row.querySelectorAll('input')[0].value.trim();
+        let col = row.querySelector('select').value;
+        let testVal = row.querySelectorAll('input')[1].value;
+        if (ph && col) mappings.push({placeholder: ph, column: col, testValue: testVal});
+      });
+      return mappings;
+    }
+
+    document.getElementById('mailmerge-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const mappings = getMappings();
+      const form = e.target;
+      const sheetSel = document.getElementById('sheetSelect');
+      const config = {
+        sheetIdOrUrl: form.sheetId.value,
+        sheetName: decodeURIComponent(sheetSel.value),
+        rangeA1: form.rangeA1.value,
+        emailCol: form.emailCol.value,
+        subject: form.subject.value,
+        body: quill.root.innerHTML,
+        mappings: mappings,
+        fromName: document.getElementById('fromName').value,
+        fromEmail: document.getElementById('fromEmail').value
+      };
+      document.getElementById('result').textContent = 'Sending emails...';
+      google.script.run.withSuccessHandler(function(msg) {
+        document.getElementById('result').textContent = msg;
+        updateQuotaDisplay();
+      }).withFailureHandler(function(err) {
+        document.getElementById('result').textContent = 'Error: ' + err.message;
+        updateQuotaDisplay();
+      }).sendMailMerge(config);
+    });
+
+    // TEST BUTTON LOGIC
+    document.getElementById('testBtn').addEventListener('click', function() {
+      const mappings = getMappings();
+      const form = document.getElementById('mailmerge-form');
+      const sheetSel = document.getElementById('sheetSelect');
+      const config = {
+        sheetIdOrUrl: form.sheetId.value,
+        sheetName: decodeURIComponent(sheetSel.value),
+        rangeA1: form.rangeA1.value,
+        emailCol: form.emailCol.value,
+        subject: form.subject.value,
+        body: quill.root.innerHTML,
+        mappings: mappings,
+        fromName: document.getElementById('fromName').value,
+        fromEmail: document.getElementById('fromEmail').value,
+        test: true // Mark as test
+      };
+      document.getElementById('result').textContent = 'Sending test email...';
+      google.script.run.withSuccessHandler(function(msg) {
+        document.getElementById('result').textContent = msg;
+        updateQuotaDisplay();
+      }).withFailureHandler(function(err) {
+        document.getElementById('result').textContent = 'Error: ' + err.message;
+        updateQuotaDisplay();
+      }).sendMailMerge(config);
+    });
+
+  </script>
+  <!-- Quill color module for text highlight and colour -->
+  <script>
+    // Enable color selection for both text color and background color
+    Quill.register('modules/toolbar', Quill.import('modules/toolbar'));
+    // Add color and background color pickers if not already present
+    // Done in the toolbar definition above (ql-color)
+    // No further action needed since Quill's default color picker is already in the toolbar
+  </script>
+</body>
+
+</html>
