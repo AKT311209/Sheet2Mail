@@ -817,6 +817,18 @@
       });
     }, true); // useCapture true to override previous
 
+    // Prevent Enter key from submitting the form
+    // Only allow submit via button click
+
+    document.getElementById('mailmerge-form').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        // Prevent form submit on Enter
+        e.preventDefault();
+        // Optionally, move to next input or do nothing
+        // e.g., you can use: e.target.blur();
+      }
+    });
+
     // --- SUBMIT LOGIC ---
 
     // Utility to get mapping config, with an option to grab test values
