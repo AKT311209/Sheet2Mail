@@ -60,6 +60,8 @@ A modern, user-friendly mail merge web app for Google Sheets and Gmail, featurin
 ## Known Limitations
 
 - If you schedule multiple email batches for the exact same time, only one will be sent. This is due to how the backend stores scheduled jobs by timestamp. To ensure all scheduled emails are sent, use unique times for each batch.
+- Quota reports from Google are not correct.
+- Attachment feature is currently challenging to implement, so it is not supported at this time.
 
 ---
 
