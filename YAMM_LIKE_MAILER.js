@@ -149,6 +149,7 @@ function sendMailMerge(config) {
   var sentCount = 0;
   var firstRow = null;
   var lastRow = null;
+  var errorMsg = null;
   for (var i = startRow - 1; i < endRow; i++) {
     var row = data[i];
     var email = row[colMap[config.emailCol]];
@@ -170,11 +171,24 @@ function sendMailMerge(config) {
     if (config.fromName) {
       mailOptions.name = config.fromName;
     }
-    MailApp.sendEmail(mailOptions);
-    sentCount++;
+    try {
+      MailApp.sendEmail(mailOptions);
+      sentCount++;
+    } catch (e) {
+      errorMsg = e && e.message ? e.message : 'Unknown error';
+      break;
+    }
   }
   if (sentCount === 0) {
-    return 'No emails sent (no valid recipients in the selected rows).';
+    return 'No emails sent (no valid recipients in the selected rows or quota exceeded).';
+  }
+  if (errorMsg) {
+    var nextRow = (lastRow || startRow) + 1;
+    return 'Stopped after sending ' + sentCount + ' emails, from row ' + firstRow + ' to row ' + lastRow + '. Error: ' + errorMsg + '. You can continue from row ' + nextRow + '.';
+  }
+  if (sentCount < (endRow - startRow + 1)) {
+    var nextRow = (lastRow || startRow) + 1;
+    return 'Quota exceeded! Sent ' + sentCount + ' emails, from row ' + firstRow + ' to row ' + lastRow + '. You can continue from row ' + nextRow + '.';
   }
   return 'Sending ' + sentCount + ' emails, from row ' + firstRow + ' to row ' + lastRow + '.';
 }
