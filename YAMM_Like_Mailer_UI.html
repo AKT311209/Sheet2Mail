@@ -338,33 +338,43 @@
       <div class="gmail-field">
         <span class="gmail-label">Sheet</span>
         <input type="text" id="sheetId" name="sheetId" class="gmail-input" placeholder="Google Sheet URL or ID" />
-        <button type="button" onclick="loadSheetData()" style="margin-left:10px;padding:5px 10px;border-radius:4px;border:1px solid #1a73e8;background:#f2f8fd;color:#1a73e8;font-size:13px;">Load</button>
+        <button type="button" onclick="loadSheetData()"
+          style="margin-left:10px;padding:5px 10px;border-radius:4px;border:1px solid #1a73e8;background:#f2f8fd;color:#1a73e8;font-size:13px;">Load</button>
       </div>
       <div id="sheet-config" style="display:none;">
-        <div class="gmail-field" style="margin-top:6px;">
-          <span class="gmail-label">From</span>
-          <input type="text" id="fromName" name="fromName" class="gmail-input" style="width:38%;" placeholder="Sender Name (optional)" />
-          <span style="margin: 0 8px;">&lt;</span>
-          <input type="text" id="fromEmail" name="fromEmail" class="gmail-input" style="width:52%;background:#f7f7f7;color:#444;font-size:13px;cursor:not-allowed;" placeholder="your@email.com" disabled />
-          <span>&gt;</span>
-        </div>
         <div class="gmail-field">
           <span class="gmail-label">Sheet</span>
           <select id="sheetSelect" name="sheet" class="gmail-select"></select>
         </div>
         <div class="gmail-field">
           <span class="gmail-label">Rows</span>
-          <input type="number" id="startRow" name="startRow" min="2" value="2" class="gmail-input" style="width: 90px; margin-right: 8px;" placeholder="Start" />
+          <input type="number" id="startRow" name="startRow" min="2" value="2" class="gmail-input"
+            style="width: 90px; margin-right: 8px;" placeholder="Start" />
           <span style="margin: 0 6px; color: #888;">to</span>
-          <input type="number" id="endRow" name="endRow" min="2" class="gmail-input" style="width: 90px;" placeholder="End" />
+          <input type="number" id="endRow" name="endRow" min="2" class="gmail-input" style="width: 90px;"
+            placeholder="End" />
         </div>
         <div class="gmail-field" id="columnsInfoRow" style="margin-top:0; display:none;">
           <span class="gmail-label">Cols</span>
           <div style="display:flex;align-items:center;gap:8px;width:100%;">
-            <input type="text" id="columnsStart" class="gmail-input" style="background:#f7f7f7;color:#444;font-size:13px;cursor:not-allowed;width:90px;" readonly tabindex="-1" />
+            <input type="text" id="columnsStart" class="gmail-input"
+              style="background:#f7f7f7;color:#444;font-size:13px;cursor:not-allowed;width:90px;" readonly
+              tabindex="-1" />
             <span style="margin: 0 6px; color: #888;">to</span>
-            <input type="text" id="columnsEnd" class="gmail-input" style="background:#f7f7f7;color:#444;font-size:13px;cursor:not-allowed;width:90px;" readonly tabindex="-1" />
+            <input type="text" id="columnsEnd" class="gmail-input"
+              style="background:#f7f7f7;color:#444;font-size:13px;cursor:not-allowed;width:90px;" readonly
+              tabindex="-1" />
           </div>
+        </div>
+        <div class="gmail-field" style="margin-top:6px;">
+          <span class="gmail-label">From</span>
+          <input type="text" id="fromName" name="fromName" class="gmail-input" style="width:38%;"
+            placeholder="Sender Name (optional)" />
+          <span style="margin: 0 8px;">&lt;</span>
+          <input type="text" id="fromEmail" name="fromEmail" class="gmail-input"
+            style="width:52%;background:#f7f7f7;color:#444;font-size:13px;cursor:not-allowed;"
+            placeholder="your@email.com" disabled />
+          <span>&gt;</span>
         </div>
         <div class="gmail-field">
           <span class="gmail-label">To</span>
@@ -373,65 +383,70 @@
         <div class="gmail-divider"></div>
         <div class="gmail-field">
           <span class="gmail-label">Subject</span>
-          <input type="text" id="subject" name="subject" class="gmail-input" placeholder="Subject with {{placeholders}}" />
+          <input type="text" id="subject" name="subject" class="gmail-input"
+            placeholder="Subject with {{placeholders}}" />
         </div>
         <div class="gmail-field" style="align-items: flex-start;">
           <span class="gmail-label" style="margin-top:8px;">Body</span>
           <div style="flex: 1;">
             <div id="toolbar">
               <span class="ql-formats">
-    <select class="ql-font">
-      <option selected value="sans-serif">Sans Serif</option>
-      <option value="serif">Serif</option>
-      <option value="monospace">Monospace</option>
-      <option value="roboto">Roboto</option>
-      <option value="arial">Arial</option>
-      <option value="times-new-roman">Times New Roman</option>
-      <option value="courier-new">Courier New</option>
-    </select>
-    <select class="ql-size">
-      <option value="small">Small</option>
-      <option selected value="normal">Normal</option>
-      <option value="large">Large</option>
-      <option value="huge">Huge</option>
-      <option value="10px">10px</option>
-      <option value="12px">12px</option>
-      <option value="14px">14px</option>
-      <option value="16px">16px</option>
-      <option value="18px">18px</option>
-      <option value="24px">24px</option>
-      <option value="32px">32px</option>
-    </select>
-  </span>
-              <span class="ql-formats">
-    <select class="ql-color"></select>
-  </span>
-              <span class="ql-formats">
-    <button class="ql-bold"></button>
-    <button class="ql-italic"></button>
-    <button class="ql-underline"></button>
-    <button class="ql-strike"></button>
-  </span>
-              <span class="ql-formats">
-    <button type="button" class="ql-link" id="customLinkBtn"></button>
-    <button class="ql-code-block"></button>
-    <button class="ql-blockquote"></button>
-  </span>
-              <span class="ql-formats">
-    <button class="ql-highlight" title="Highlight text"><span style="background:yellow;">H</span></button>
+                <select class="ql-font">
+                  <option selected value="sans-serif">Sans Serif</option>
+                  <option value="serif">Serif</option>
+                  <option value="monospace">Monospace</option>
+                  <option value="roboto">Roboto</option>
+                  <option value="arial">Arial</option>
+                  <option value="times-new-roman">Times New Roman</option>
+                  <option value="courier-new">Courier New</option>
+                </select>
+                <select class="ql-size">
+                  <option value="small">Small</option>
+                  <option selected value="normal">Normal</option>
+                  <option value="large">Large</option>
+                  <option value="huge">Huge</option>
+                  <option value="10px">10px</option>
+                  <option value="12px">12px</option>
+                  <option value="14px">14px</option>
+                  <option value="16px">16px</option>
+                  <option value="18px">18px</option>
+                  <option value="24px">24px</option>
+                  <option value="32px">32px</option>
+                </select>
               </span>
               <span class="ql-formats">
-    <button class="ql-list" value="ordered"></button>
-    <button class="ql-list" value="bullet"></button>
-  </span>
+                <select class="ql-color"></select>
+              </span>
               <span class="ql-formats">
-    <button class="ql-clean"></button>
-  </span>
+                <button class="ql-bold"></button>
+                <button class="ql-italic"></button>
+                <button class="ql-underline"></button>
+                <button class="ql-strike"></button>
+              </span>
               <span class="ql-formats">
-    <button type="button" id="insertImageBtn" title="Insert image from link">
-      <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#444" d="M19 19H5V5h7V3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zm-6-8l-2.03 2.71 2.56 3.42 3.44-4.59L21 17H7z"/><circle fill="#444" cx="14.5" cy="7.5" r="1.5"/></svg>
-    </button>
-  </span>
+                <button type="button" class="ql-link" id="customLinkBtn"></button>
+                <button class="ql-code-block"></button>
+                <button class="ql-blockquote"></button>
+              </span>
+              <span class="ql-formats">
+                <button class="ql-highlight" title="Highlight text"><span style="background:yellow;">H</span></button>
+              </span>
+              <span class="ql-formats">
+                <button class="ql-list" value="ordered"></button>
+                <button class="ql-list" value="bullet"></button>
+              </span>
+              <span class="ql-formats">
+                <button class="ql-clean"></button>
+              </span>
+              <span class="ql-formats">
+                <button type="button" id="insertImageBtn" title="Insert image from link">
+                  <svg width="18" height="18" viewBox="0 0 24 24">
+                    <path fill="#444"
+                      d="M19 19H5V5h7V3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zm-6-8l-2.03 2.71 2.56 3.42 3.44-4.59L21 17H7z" />
+                    <circle fill="#444" cx="14.5" cy="7.5" r="1.5" />
+                  </svg>
+                </button>
+              </span>
             </div>
             <div id="quill-container"></div>
           </div>
@@ -455,7 +470,8 @@
           <div class="gmail-meta-col">
             <label style="margin-bottom:4px;display:block;"> </label>
             <button type="submit" class="gmail-send-btn">Send</button>
-            <button type="button" class="gmail-send-btn" style="background:#ffa726;margin-left:8px;" id="testBtn">Test</button>
+            <button type="button" class="gmail-send-btn" style="background:#ffa726;margin-left:8px;"
+              id="testBtn">Test</button>
           </div>
         </div>
         <div id="result"></div>
@@ -493,14 +509,19 @@
       <div class="gmail-dialog-schedule">
         <div style="font-weight:500;font-size:16px;margin-bottom:6px;">Send Options</div>
         <div id="scheduleStep1">
-          <button type="button" id="sendNowBtn" style="margin-bottom:10px;width:100%;background:#1a73e8;color:#fff;border:none;border-radius:4px;padding:8px 0;font-size:15px;">Send Immediately</button>
-          <button type="button" id="scheduleBtn" style="width:100%;background:#ffa726;color:#fff;border:none;border-radius:4px;padding:8px 0;font-size:15px;">Schedule Send</button>
+          <button type="button" id="sendNowBtn"
+            style="margin-bottom:10px;width:100%;background:#1a73e8;color:#fff;border:none;border-radius:4px;padding:8px 0;font-size:15px;">Send
+            Immediately</button>
+          <button type="button" id="scheduleBtn"
+            style="width:100%;background:#ffa726;color:#fff;border:none;border-radius:4px;padding:8px 0;font-size:15px;">Schedule
+            Send</button>
         </div>
         <div id="scheduleStep2" style="display:none;">
           <label for="scheduleDateTime">Select date and time to send:</label>
           <input type="datetime-local" id="scheduleDateTime" step="1" />
           <div style="margin-top:10px;">
-            <button type="button" id="confirmScheduleBtn" style="background:#1a73e8;color:#fff;border:none;border-radius:4px;padding:6px 18px;">Confirm</button>
+            <button type="button" id="confirmScheduleBtn"
+              style="background:#1a73e8;color:#fff;border:none;border-radius:4px;padding:6px 18px;">Confirm</button>
             <button type="button" id="cancelScheduleBtn">Cancel</button>
           </div>
           <div id="scheduleDialogError" style="color:#e53935;font-size:13px;margin-top:6px;"></div>
@@ -509,20 +530,20 @@
     </div>
     <div class="footer-dev">
       Developed by Khoi Tran (<a href="https://about.khoi.io.vn" target="_blank">AKT311209</a>)<br>
-        Source on <a href="https://github.com/AKT311209/Sheet2Mail/" target="_blank">GitHub</a>
+      Source on <a href="https://github.com/AKT311209/Sheet2Mail/" target="_blank">GitHub</a>
     </div>
   </div>
   <script>
     // --- QUOTA LOGIC ---
     function updateQuotaDisplay() {
-      google.script.run.withSuccessHandler(function(quota) {
+      google.script.run.withSuccessHandler(function (quota) {
         document.getElementById('quota-value').textContent = quota;
       }).getEmailQuota();
     }
 
     // Set user's email if possible and update quota on load
-    document.addEventListener('DOMContentLoaded', function() {
-      google.script.run.withSuccessHandler(function(email) {
+    document.addEventListener('DOMContentLoaded', function () {
+      google.script.run.withSuccessHandler(function (email) {
         document.getElementById('fromEmail').value = email;
       }).getCurrentUserEmail && google.script.run.getCurrentUserEmail();
       updateQuotaDisplay();
@@ -535,7 +556,7 @@
       if (!sheetId) {
         alert("Please enter a Spreadsheet ID or URL."); return;
       }
-      google.script.run.withSuccessHandler(function(data) {
+      google.script.run.withSuccessHandler(function (data) {
         sheetData = data;
         if (data.length === 0) {
           alert("No sheets found or invalid Sheet ID/URL.");
@@ -554,7 +575,7 @@
     function onSheetChange() {
       const sheetSel = document.getElementById('sheetSelect');
       const sheetName = decodeURIComponent(sheetSel.value);
-      const headers = (sheetData.find(s => s.name === sheetName) || {headers:[]}).headers;
+      const headers = (sheetData.find(s => s.name === sheetName) || { headers: [] }).headers;
       const emailColSel = document.getElementById('emailCol');
       emailColSel.innerHTML = '';
       headers.forEach(h => {
@@ -578,7 +599,7 @@
           return s;
         }
         columnsStart.value = colLetter(0);
-        columnsEnd.value = colLetter(headers.length-1);
+        columnsEnd.value = colLetter(headers.length - 1);
       } else {
         columnsInfoRow.style.display = 'none';
         columnsStart.value = '';
@@ -590,7 +611,7 @@
       rows.forEach(row => {
         let select = row.querySelector('select'); let prev = select.value; select.innerHTML = '';
         headers.forEach(h => {
-          select.innerHTML += `<option value="${h}" class="gmail-trimmed-option" title="${h}" ${h===prev ? 'selected' : ''}>${trimText(h, 30)}</option>`;
+          select.innerHTML += `<option value="${h}" class="gmail-trimmed-option" title="${h}" ${h === prev ? 'selected' : ''}>${trimText(h, 30)}</option>`;
         });
       });
     }
@@ -598,7 +619,7 @@
       const sheetSel = document.getElementById('sheetSelect');
       const sheetName = decodeURIComponent(sheetSel.value);
       if (!sheetName) return;
-      const headers = (sheetData.find(s => s.name === sheetName) || {headers:[]}).headers;
+      const headers = (sheetData.find(s => s.name === sheetName) || { headers: [] }).headers;
       let tr = document.createElement('tr');
       tr.innerHTML = `<td><input type="text" placeholder="e.g., first_name" style="width:98%"></td>
                       <td><select style="width:98%">${headers.map(h => `<option value="${h}" class="gmail-trimmed-option" title="${h}">${trimText(h, 30)}</option>`).join('')}</select></td>
@@ -619,7 +640,7 @@
         toolbar: {
           container: "#toolbar",
           handlers: {
-            highlight: function() {
+            highlight: function () {
               let range = quill.getSelection();
               if (range) {
                 quill.formatText(range.index, range.length, { background: 'yellow' });
@@ -716,7 +737,7 @@
     document.getElementById('customLinkBtn').onclick = openLinkDialog;
 
     // ESC key closes dialogs
-    document.addEventListener('keydown', function(e) {
+    document.addEventListener('keydown', function (e) {
       if (e.key === "Escape") {
         closeImageDialog();
         closeLinkDialog();
@@ -736,11 +757,11 @@
       document.getElementById('scheduleDialogBg').style.display = 'none';
       document.getElementById('scheduleDialogError').textContent = '';
     }
-    document.getElementById('sendNowBtn').onclick = function() {
+    document.getElementById('sendNowBtn').onclick = function () {
       closeScheduleDialog();
       if (scheduleSendCallback) scheduleSendCallback({ mode: 'now' });
     };
-    document.getElementById('scheduleBtn').onclick = function() {
+    document.getElementById('scheduleBtn').onclick = function () {
       document.getElementById('scheduleStep1').style.display = 'none';
       document.getElementById('scheduleStep2').style.display = '';
       // Set min date/time to now, and format input as dd/mm/yyyy
@@ -759,11 +780,11 @@
       document.getElementById('scheduleDialogError').textContent = '';
       // Add dd/mm/yyyy placeholder and date mask
       dtInput.placeholder = 'dd/mm/yyyy hh:mm:ss';
-      dtInput.oninput = function() {
+      dtInput.oninput = function () {
         // No-op, browser handles format
       };
     };
-    document.getElementById('confirmScheduleBtn').onclick = function() {
+    document.getElementById('confirmScheduleBtn').onclick = function () {
       const dt = document.getElementById('scheduleDateTime').value;
       if (!dt) {
         document.getElementById('scheduleDialogError').textContent = 'Please select a date and time.';
@@ -772,22 +793,22 @@
       // Show confirmation in dd/mm/yyyy hh:mm:ss
       const d = new Date(dt);
       const pad = n => n.toString().padStart(2, '0');
-      const formatted = `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+      const formatted = `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
       document.getElementById('result').textContent = 'Scheduled email send for ' + formatted + '.';
       closeScheduleDialog();
       if (scheduleSendCallback) scheduleSendCallback({ mode: 'schedule', datetime: dt });
     };
     // ESC key closes schedule dialog too
-    document.addEventListener('keydown', function(e) {
+    document.addEventListener('keydown', function (e) {
       if (e.key === "Escape") {
         closeScheduleDialog();
       }
     });
 
     // --- OVERRIDE SEND BUTTON LOGIC ---
-    document.getElementById('mailmerge-form').addEventListener('submit', function(e) {
+    document.getElementById('mailmerge-form').addEventListener('submit', function (e) {
       e.preventDefault();
-      openScheduleDialog(function(option) {
+      openScheduleDialog(function (option) {
         const mappings = getMappings();
         const form = document.getElementById('mailmerge-form');
         const sheetSel = document.getElementById('sheetSelect');
@@ -807,10 +828,10 @@
           config.scheduleDateTime = option.datetime;
         }
         document.getElementById('result').textContent = option.mode === 'schedule' ? 'Scheduling email...' : 'Sending emails...';
-        google.script.run.withSuccessHandler(function(msg) {
+        google.script.run.withSuccessHandler(function (msg) {
           document.getElementById('result').textContent = msg;
           updateQuotaDisplay();
-        }).withFailureHandler(function(err) {
+        }).withFailureHandler(function (err) {
           document.getElementById('result').textContent = 'Error: ' + err.message;
           updateQuotaDisplay();
         }).sendMailMerge(config);
@@ -818,7 +839,7 @@
     }, true); // useCapture true to override previous
 
     // Prevent Enter key from submitting the form (only allow submit via button click)
-    document.getElementById('mailmerge-form').addEventListener('keydown', function(e) {
+    document.getElementById('mailmerge-form').addEventListener('keydown', function (e) {
       if (e.key === 'Enter') {
         // Block Enter key to avoid accidental form submission
         e.preventDefault();
@@ -835,13 +856,13 @@
         let ph = row.querySelectorAll('input')[0].value.trim();
         let col = row.querySelector('select').value;
         let testVal = row.querySelectorAll('input')[1].value;
-        if (ph && col) mappings.push({placeholder: ph, column: col, testValue: testVal});
+        if (ph && col) mappings.push({ placeholder: ph, column: col, testValue: testVal });
       });
       return mappings;
     }
 
     // TEST BUTTON LOGIC
-    document.getElementById('testBtn').addEventListener('click', function() {
+    document.getElementById('testBtn').addEventListener('click', function () {
       const mappings = getMappings();
       const form = document.getElementById('mailmerge-form');
       const sheetSel = document.getElementById('sheetSelect');
@@ -859,10 +880,10 @@
         test: true // Mark as test
       };
       document.getElementById('result').textContent = 'Sending test email...';
-      google.script.run.withSuccessHandler(function(msg) {
+      google.script.run.withSuccessHandler(function (msg) {
         document.getElementById('result').textContent = msg;
         updateQuotaDisplay();
-      }).withFailureHandler(function(err) {
+      }).withFailureHandler(function (err) {
         document.getElementById('result').textContent = 'Error: ' + err.message;
         updateQuotaDisplay();
       }).sendMailMerge(config);
