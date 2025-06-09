@@ -49,7 +49,8 @@ function getSheetsAndHeaders(sheetIdOrUrl) {
  * {
  *   sheetIdOrUrl: string,
  *   sheetName: string,
- *   rangeA1: string,
+ *   startRow: number, // NEW: 1-based, inclusive
+ *   endRow: number,   // NEW: 1-based, inclusive
  *   emailCol: string,
  *   subject: string,
  *   body: string,
@@ -121,11 +122,10 @@ function sendMailMerge(config) {
   if (!sheet) {
     throw new Error('Sheet "' + config.sheetName + '" not found. Please check your sheet selection.');
   }
-  var range = sheet.getRange(config.rangeA1);
-  var data = range.getValues();
+  var data = sheet.getDataRange().getValues();
   var headers = data[0];
   if (!headers) {
-    throw new Error('No header row found in the specified range.');
+    throw new Error('No header row found in the selected sheet.');
   }
   var colMap = {};
   headers.forEach(function(h, idx) {
@@ -137,16 +137,19 @@ function sendMailMerge(config) {
   }
 
   var map = {};
-  config.mappings.forEach(function(m) {
+  (config.mappings || []).forEach(function(m) {
     if (m.placeholder && m.column && (m.column in colMap)) {
       map[m.placeholder] = colMap[m.column];
     }
   });
 
+  // Use startRow and endRow (1-based, including header row as row 1)
+  var startRow = Math.max(2, config.startRow || 2); // default to 2 (first data row)
+  var endRow = Math.min(data.length, config.endRow || data.length);
   var sentCount = 0;
   var firstRow = null;
   var lastRow = null;
-  for (var i = 1; i < data.length; i++) {
+  for (var i = startRow - 1; i < endRow; i++) {
     var row = data[i];
     var email = row[colMap[config.emailCol]];
     if (!email) continue;
@@ -171,7 +174,7 @@ function sendMailMerge(config) {
     sentCount++;
   }
   if (sentCount === 0) {
-    return 'No emails sent (no valid recipients in the selected range).';
+    return 'No emails sent (no valid recipients in the selected rows).';
   }
   return 'Sending ' + sentCount + ' emails, from row ' + firstRow + ' to row ' + lastRow + '.';
 }

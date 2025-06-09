@@ -349,8 +349,10 @@
           <select id="emailCol" name="emailCol" class="gmail-select"></select>
         </div>
         <div class="gmail-field">
-          <span class="gmail-label">Range</span>
-          <input type="text" id="rangeA1" name="rangeA1" class="gmail-input" value="A1:E10" />
+          <span class="gmail-label">Rows</span>
+          <input type="number" id="startRow" name="startRow" min="2" value="2" class="gmail-input" style="width: 90px; margin-right: 8px;" placeholder="Start" />
+          <span style="margin: 0 6px; color: #888;">to</span>
+          <input type="number" id="endRow" name="endRow" min="2" class="gmail-input" style="width: 90px;" placeholder="End" />
         </div>
         <div class="gmail-divider"></div>
         <div class="gmail-field">
@@ -753,7 +755,8 @@
         const config = {
           sheetIdOrUrl: form.sheetId.value,
           sheetName: decodeURIComponent(sheetSel.value),
-          rangeA1: form.rangeA1.value,
+          startRow: parseInt(form.startRow.value, 10) || 2,
+          endRow: parseInt(form.endRow.value, 10) || undefined,
           emailCol: form.emailCol.value,
           subject: form.subject.value,
           body: quill.root.innerHTML,
@@ -797,7 +800,8 @@
       const config = {
         sheetIdOrUrl: form.sheetId.value,
         sheetName: decodeURIComponent(sheetSel.value),
-        rangeA1: form.rangeA1.value,
+        startRow: parseInt(form.startRow.value, 10) || 2,
+        endRow: parseInt(form.endRow.value, 10) || undefined,
         emailCol: form.emailCol.value,
         subject: form.subject.value,
         body: quill.root.innerHTML,
