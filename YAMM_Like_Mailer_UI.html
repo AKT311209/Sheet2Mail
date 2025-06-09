@@ -303,6 +303,14 @@
         padding: 0 6px 12px 6px;
       }
     }
+
+    /* Add not-allowed cursor for disabled sender email input to match columns */
+    #fromEmail[disabled] {
+      background: #f7f7f7;
+      color: #444;
+      font-size: 13px;
+      cursor: not-allowed;
+    }
   </style>
   <script src="https://cdn.quilljs.com/1.3.7/quill.js"></script>
   <script>
@@ -337,7 +345,7 @@
           <span class="gmail-label">From</span>
           <input type="text" id="fromName" name="fromName" class="gmail-input" style="width:38%;" placeholder="Sender Name (optional)" />
           <span style="margin: 0 8px;">&lt;</span>
-          <input type="text" id="fromEmail" name="fromEmail" class="gmail-input" style="width:52%;" placeholder="your@email.com" disabled />
+          <input type="text" id="fromEmail" name="fromEmail" class="gmail-input" style="width:52%;background:#f7f7f7;color:#444;font-size:13px;cursor:not-allowed;" placeholder="your@email.com" disabled />
           <span>&gt;</span>
         </div>
         <div class="gmail-field">
