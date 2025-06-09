@@ -354,6 +354,14 @@
           <span style="margin: 0 6px; color: #888;">to</span>
           <input type="number" id="endRow" name="endRow" min="2" class="gmail-input" style="width: 90px;" placeholder="End" />
         </div>
+        <div class="gmail-field" id="columnsInfoRow" style="margin-top:0; display:none;">
+          <span class="gmail-label">Cols</span>
+          <div style="display:flex;align-items:center;gap:8px;width:100%;">
+            <input type="text" id="columnsStart" class="gmail-input" style="background:#f7f7f7;color:#444;font-size:13px;cursor:not-allowed;width:90px;" readonly tabindex="-1" />
+            <span style="margin: 0 6px; color: #888;">to</span>
+            <input type="text" id="columnsEnd" class="gmail-input" style="background:#f7f7f7;color:#444;font-size:13px;cursor:not-allowed;width:90px;" readonly tabindex="-1" />
+          </div>
+        </div>
         <div class="gmail-divider"></div>
         <div class="gmail-field">
           <span class="gmail-label">Subject</span>
@@ -545,6 +553,29 @@
         emailColSel.innerHTML += `<option value="${h}" class="gmail-trimmed-option" title="${h}">${trimText(h, 30)}</option>`;
       });
       updateMappingColumns(headers);
+      // Show columns info in a readonly input box
+      const columnsInfoRow = document.getElementById('columnsInfoRow');
+      const columnsStart = document.getElementById('columnsStart');
+      const columnsEnd = document.getElementById('columnsEnd');
+      if (headers.length > 0) {
+        columnsInfoRow.style.display = '';
+        function colLetter(idx) {
+          let s = '';
+          idx++;
+          while (idx > 0) {
+            let mod = (idx - 1) % 26;
+            s = String.fromCharCode(65 + mod) + s;
+            idx = Math.floor((idx - mod) / 26);
+          }
+          return s;
+        }
+        columnsStart.value = colLetter(0);
+        columnsEnd.value = colLetter(headers.length-1);
+      } else {
+        columnsInfoRow.style.display = 'none';
+        columnsStart.value = '';
+        columnsEnd.value = '';
+      }
     }
     function updateMappingColumns(headers) {
       let rows = document.querySelectorAll('#mappingBody tr');
