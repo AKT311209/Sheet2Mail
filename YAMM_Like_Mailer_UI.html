@@ -817,15 +817,12 @@
       });
     }, true); // useCapture true to override previous
 
-    // Prevent Enter key from submitting the form
-    // Only allow submit via button click
-
+    // Prevent Enter key from submitting the form (only allow submit via button click)
     document.getElementById('mailmerge-form').addEventListener('keydown', function(e) {
       if (e.key === 'Enter') {
-        // Prevent form submit on Enter
+        // Block Enter key to avoid accidental form submission
         e.preventDefault();
-        // Optionally, move to next input or do nothing
-        // e.g., you can use: e.target.blur();
+        // Optionally, you could move focus to the next field here
       }
     });
 
