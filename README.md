@@ -13,7 +13,7 @@ A modern, user-friendly mail merge web app for Google Sheets and Gmail, featurin
 
 - **Rich Email Composer**: Format text, insert images by URL, insert/edit links with masked text, choose font & size, colors, and more.
 - **Personalization**: Use `{{placeholders}}` in subject/body and map them to columns from your Google Sheet.
-- **Sender Masking**: Optionally specify a sender name for the "From" field (see Gmail limitations below).
+- **Sender Masking**: Optionally specify a sender name for the "From" field.
 - **Sheet Picker**: Enter a sheet URL or ID, select worksheet, email column, data range, and map columns to placeholders.
 - **Testing**: See exactly how your email will look by sending email to your own inbox
 - **Easy Deployment**: No external libraries needed, 100% Apps Script + Quill.js.
