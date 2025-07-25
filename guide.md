@@ -40,7 +40,7 @@ Sheet2Mail is a Google Apps Script-based tool that enables MailMerge directly fr
 ### 3. Composing Your Email Template
 
 1. **Open Google Sheet**.  
-    ![](image.png)
+    ![](image.png)  
     In the UI, copy your Google Sheet URL or ID into the field and click "Load" to continue.  
 
     Note: You must have read permission for the sheet before loading.
