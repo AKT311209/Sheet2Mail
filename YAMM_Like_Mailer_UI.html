@@ -437,6 +437,12 @@
                 <button class="ql-list" value="ordered"></button>
                 <button class="ql-list" value="bullet"></button>
               </span>
+              <!-- Add text alignment controls -->
+              <span class="ql-formats">
+                <button class="ql-align" value="" title="Align Left"></button>
+                <button class="ql-align" value="center" title="Align Center"></button>
+                <button class="ql-align" value="right" title="Align Right"></button>
+              </span>
               <span class="ql-formats">
                 <button class="ql-clean"></button>
               </span>
@@ -636,6 +642,9 @@
     // --- RICH TEXT EDITOR LOGIC ---
     var Highlight = Quill.import('attributors/class/background');
     Quill.register(Highlight, true);
+    // Register align style for inline text alignment in emails
+    var AlignStyle = Quill.import('attributors/style/align');
+    Quill.register(AlignStyle, true);
     var quill = new Quill('#quill-container', {
       theme: 'snow',
       placeholder: 'Compose email. Use {{placeholders}} for merge fields.',
@@ -720,7 +729,6 @@
       }
       const range = quill.getSelection(true);
       if (range && range.length > 0) {
-        // If text selected, replace text if mask is different, then format as link
         if (text && quill.getText(range.index, range.length) !== text) {
           quill.deleteText(range.index, range.length);
           quill.insertText(range.index, text, { link: url });
@@ -728,15 +736,12 @@
           quill.format('link', url);
         }
       } else if (text) {
-        // If no text selected but mask provided, insert as link
         quill.insertText(range.index, text, { link: url });
       } else {
-        // Insert the URL itself as link
         quill.insertText(range.index, url, { link: url });
       }
       closeLinkDialog();
     }
-    // Override default link button to show custom dialog
     document.getElementById('customLinkBtn').onclick = openLinkDialog;
 
     // ESC key closes dialogs
@@ -875,12 +880,7 @@
         startRow: parseInt(form.startRow.value, 10) || 2,
         endRow: parseInt(form.endRow.value, 10) || undefined,
         emailCol: form.emailCol.value,
-        subject: form.subject.value,
-        body: quill.root.innerHTML,
-        mappings: mappings,
-        fromName: document.getElementById('fromName').value,
-        fromEmail: document.getElementById('fromEmail').value,
-        test: true // Mark as test
+        subject: form.subject.value
       };
       document.getElementById('result').textContent = 'Sending test email...';
       google.script.run.withSuccessHandler(function (msg) {
