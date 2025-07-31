@@ -3,6 +3,8 @@
 
 <head>
   <base target="_top">
+  <title>Sheet2Mail</title>
+  <link rel="icon" type="image/png" href="https://ssl.gstatic.com/ui/v1/icons/mail/gm3/1x/avatar_2x.png">
   <link href="https://fonts.googleapis.com/css?family=Roboto:400,500&display=swap" rel="stylesheet">
   <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
   <style>
@@ -501,10 +503,14 @@
     <div class="gmail-dialog-bg" id="linkDialogBg">
       <div class="gmail-dialog">
         <div style="font-weight:500;font-size:16px;margin-bottom:6px;">Insert/Edit Link</div>
+        <div style="font-size:13px;color:#888;margin-bottom:8px;">
+          You can use <b>{{merge_fields}}</b> in both the display text and the link URL.<br>
+          Example: <code>https://example.com/profile/{{user_id}}</code> or <code>{{first_name}}</code>
+        </div>
         <label for="linkTextInput">Text to display (optional):</label>
         <input type="text" id="linkTextInput" placeholder="Link text (optional)" />
         <label for="linkUrlInput">URL:</label>
-        <input type="text" id="linkUrlInput" placeholder="https://example.com/" />
+        <input type="text" id="linkUrlInput" placeholder="https://example.com/ or {{first_name}}" />
         <div>
           <button type="button" onclick="insertLinkFromDialog()">Insert</button>
           <button type="button" onclick="closeLinkDialog()">Cancel</button>
@@ -723,8 +729,10 @@
         errorBox.textContent = "Please enter a URL.";
         return;
       }
+      // Allow merge fields in URL (e.g., https://example.com/{{first_name}})
+      // Only require that it starts with http:// or https://
       if (!/^https?:\/\//i.test(url)) {
-        errorBox.textContent = "Not a valid URL (must start with http:// or https://).";
+        errorBox.textContent = "Not a valid URL (must start with http:// or https://). Merge fields like {{first_name}} are allowed.";
         return;
       }
       const range = quill.getSelection(true);
