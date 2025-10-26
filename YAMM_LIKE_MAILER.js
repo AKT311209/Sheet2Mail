@@ -30,7 +30,7 @@ function getSheetsAndHeaders(sheetIdOrUrl) {
   }
   var sheets = ss.getSheets();
   var result = [];
-  sheets.forEach(function(sheet) {
+  sheets.forEach(function (sheet) {
     var headers = sheet.getDataRange().getValues()[0];
     result.push({
       name: sheet.getName(),
@@ -69,19 +69,62 @@ function sendMailMerge(config) {
     // Remove scheduleDateTime to avoid recursion
     var configCopy = JSON.parse(JSON.stringify(config));
     delete configCopy.scheduleDateTime;
-    ScriptApp.newTrigger('sendMailMergeScheduled')
-      .timeBased()
-      .at(dt)
-      .create();
-    // Store config in PropertiesService for the scheduled trigger
-    var key = 'SCHEDULED_MAILMERGE_' + dt.getTime();
-    PropertiesService.getScriptProperties().setProperty(key, JSON.stringify(configCopy));
-    // Format date as dd/mm/yy
+
+    // Basic safeguard: avoid creating too many triggers for this project
+    try {
+      var existingTriggers = ScriptApp.getProjectTriggers();
+      // Typical Apps Script limit is ~20 time-based triggers per project; use 18 as a soft threshold
+      if (existingTriggers && existingTriggers.length >= 18) {
+        throw new Error('Too many triggers exist for this script. Please remove old scheduled tasks before creating new ones.');
+      }
+    } catch (err) {
+      // If ScriptApp.getProjectTriggers fails for any reason, continue and let trigger creation attempt
+    }
+
+    var trigger = null;
+    try {
+      trigger = ScriptApp.newTrigger('sendMailMergeScheduled')
+        .timeBased()
+        .at(dt)
+        .create();
+    } catch (e) {
+      throw new Error('Failed to create scheduled trigger: ' + (e && e.message ? e.message : e));
+    }
+
+    // Try to store the config keyed by the trigger's unique id for reliable lookup
+    try {
+      var triggerUid = (trigger && typeof trigger.getUniqueId === 'function') ? trigger.getUniqueId() : null;
+      var props = PropertiesService.getScriptProperties();
+      if (triggerUid) {
+        var key = 'SCHEDULED_MAILMERGE_' + triggerUid;
+        var payload = {
+          config: configCopy,
+          scheduledFor: dt.getTime(),
+          createdBy: (Session && Session.getActiveUser && Session.getActiveUser().getEmail) ? Session.getActiveUser().getEmail() : null
+        };
+        props.setProperty(key, JSON.stringify(payload));
+      } else {
+        // Fallback: store by timestamp (legacy behaviour) but include scheduledFor
+        var keyTs = 'SCHEDULED_MAILMERGE_' + dt.getTime();
+        var payload = {
+          config: configCopy,
+          scheduledFor: dt.getTime(),
+          createdBy: (Session && Session.getActiveUser && Session.getActiveUser().getEmail) ? Session.getActiveUser().getEmail() : null
+        };
+        PropertiesService.getScriptProperties().setProperty(keyTs, JSON.stringify(payload));
+      }
+    } catch (e) {
+      // If saving config fails, delete the trigger to avoid orphan triggers and surface error
+      try { if (trigger) ScriptApp.deleteTrigger(trigger); } catch (ex) { }
+      throw new Error('Failed to store scheduled configuration: ' + (e && e.message ? e.message : e));
+    }
+
+    // Format date as dd/mm/yy for user-friendly message
     var day = dt.getDate().toString().padStart(2, '0');
     var month = (dt.getMonth() + 1).toString().padStart(2, '0');
     var year = dt.getFullYear().toString().slice(-2);
     var formatted = day + '/' + month + '/' + year;
-    var time = dt.toTimeString().slice(0,8); // HH:MM:SS
+    var time = dt.toTimeString().slice(0, 8); // HH:MM:SS
     return 'Scheduled email send for ' + formatted + ' ' + time + '.';
   }
 
@@ -90,7 +133,7 @@ function sendMailMerge(config) {
     var subject = config.subject;
     var body = config.body;
     var map = {};
-    (config.mappings || []).forEach(function(m) {
+    (config.mappings || []).forEach(function (m) {
       if (m.placeholder) {
         map[m.placeholder] = m.testValue || '';
       }
@@ -128,7 +171,7 @@ function sendMailMerge(config) {
     throw new Error('No header row found in the selected sheet.');
   }
   var colMap = {};
-  headers.forEach(function(h, idx) {
+  headers.forEach(function (h, idx) {
     colMap[h] = idx;
   });
 
@@ -137,7 +180,7 @@ function sendMailMerge(config) {
   }
 
   var map = {};
-  (config.mappings || []).forEach(function(m) {
+  (config.mappings || []).forEach(function (m) {
     if (m.placeholder && m.column && (m.column in colMap)) {
       map[m.placeholder] = colMap[m.column];
     }
@@ -198,33 +241,71 @@ function sendMailMerge(config) {
  * Looks up config in PropertiesService and calls sendMailMerge.
  */
 function sendMailMergeScheduled(e) {
-  // Remove the trigger that called this function (cleanup)
-  if (e && e.triggerUid) {
-    var allTriggers = ScriptApp.getProjectTriggers();
-    for (var i = 0; i < allTriggers.length; i++) {
-      if (allTriggers[i].getUniqueId && allTriggers[i].getUniqueId() === e.triggerUid) {
-        ScriptApp.deleteTrigger(allTriggers[i]);
-        break;
+  // Attempt to delete the trigger that called this function (cleanup)
+  try {
+    if (e && e.triggerUid) {
+      var allTriggers = ScriptApp.getProjectTriggers();
+      for (var i = 0; i < allTriggers.length; i++) {
+        if (allTriggers[i].getUniqueId && allTriggers[i].getUniqueId() === e.triggerUid) {
+          try { ScriptApp.deleteTrigger(allTriggers[i]); } catch (ex) { /* ignore deletion errors */ }
+          break;
+        }
       }
     }
+  } catch (err) {
+    // ignore errors when enumerating/deleting triggers
   }
-  // Find the config for the closest scheduled time (within 2 minutes)
-  var now = Date.now();
-  var props = PropertiesService.getScriptProperties().getProperties();
+
+  var props = PropertiesService.getScriptProperties();
   var foundKey = null;
   var foundConfig = null;
-  for (var key in props) {
-    if (key.startsWith('SCHEDULED_MAILMERGE_')) {
-      var t = parseInt(key.replace('SCHEDULED_MAILMERGE_', ''));
-      if (Math.abs(now - t) < 2 * 60 * 1000) { // within 2 minutes
+
+  // Preferred: lookup by trigger UID (reliable mapping)
+  if (e && e.triggerUid) {
+    var key = 'SCHEDULED_MAILMERGE_' + e.triggerUid;
+    var raw = props.getProperty(key);
+    if (raw) {
+      try {
+        var parsed = JSON.parse(raw);
+        foundConfig = parsed.config || parsed; // support either {config:..., ...} or direct config
         foundKey = key;
-        foundConfig = JSON.parse(props[key]);
-        break;
+      } catch (ex) {
+        // parsing failed; continue to fallback
       }
     }
   }
+
+  // Fallback: keep the old time-window search for legacy timestamp keys
+  if (!foundConfig) {
+    var now = Date.now();
+    var all = props.getProperties();
+    for (var k in all) {
+      if (k.startsWith('SCHEDULED_MAILMERGE_')) {
+        try {
+          var entry = all[k];
+          var parsed = JSON.parse(entry);
+          var t = parsed && parsed.scheduledFor ? parseInt(parsed.scheduledFor, 10) : parseInt(k.replace('SCHEDULED_MAILMERGE_', ''), 10);
+          if (!isNaN(t) && Math.abs(now - t) < 2 * 60 * 1000) { // within 2 minutes
+            foundKey = k;
+            foundConfig = parsed.config || parsed;
+            break;
+          }
+        } catch (err) {
+          // ignore parse errors and continue
+        }
+      }
+    }
+  }
+
   if (foundConfig) {
-    sendMailMerge(foundConfig);
-    PropertiesService.getScriptProperties().deleteProperty(foundKey);
+    try {
+      sendMailMerge(foundConfig);
+    } catch (err) {
+      // If sendMailMerge throws, surface a log but don't rethrow to avoid stopping cleanup
+      Logger.log('sendMailMergeScheduled: sendMailMerge failed: ' + (err && err.message ? err.message : err));
+    }
+    if (foundKey) {
+      try { props.deleteProperty(foundKey); } catch (ex) { /* ignore delete failures */ }
+    }
   }
 }
