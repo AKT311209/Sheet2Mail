@@ -893,9 +893,14 @@
         startRow: parseInt(form.startRow.value, 10) || 2,
         endRow: parseInt(form.endRow.value, 10) || undefined,
         emailCol: form.emailCol.value,
-        subject: form.subject.value
+        subject: form.subject.value,
+        body: quill.root.innerHTML,
+        mappings: mappings,
+        fromName: document.getElementById('fromName').value,
+        fromEmail: document.getElementById('fromEmail').value,
+        test: true
       };
-      document.getElementById('result').textContent = 'Sending test email...';
+      document.getElementById('result').textContent = 'Sending test email to ' + (config.fromEmail || 'your email') + '...';
       google.script.run.withSuccessHandler(function (msg) {
         document.getElementById('result').textContent = msg;
         updateQuotaDisplay();
